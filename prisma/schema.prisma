@@ -1,0 +1,121 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String?
+  password     String?
+  role         String   @default("user") // user, admin
+  nik          String?
+  jabatan      String?
+  departemen   String?
+  site         String?
+  poh          String?
+  statusKaryawan String? // Kontrak, Tetap
+  noKtp        String?
+  noTelp       String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  pengajuanCuti     PengajuanCuti[]
+  pengajuanTraining PengajuanTraining[]
+  kontakHR          KontakHR[]
+}
+
+model PengajuanCuti {
+  id                    String   @id @default(cuid())
+  userId                String
+  nama                  String
+  nik                   String
+  jabatan               String
+  departemen            String
+  site                  String
+  poh                   String
+  statusKaryawan        String
+  noKtp                 String
+  noTelp                String
+  jenisPengajuanCuti    String // Cuti Periodik, Cuti Tahunan, Cuti Emergency, Dinas Luar, Ijin PP
+  tanggalCuti           DateTime
+  tanggalMulaiCuti      DateTime
+  tanggalAkhirCuti      DateTime
+  ruteCuti              String?
+  berangkatDari         String?
+  tujuan                String?
+  sisaCuti              Int?
+  sisaCutiTahunan       Int?
+  cutiPeriodikBerikutnya DateTime?
+  dokumenPdf            String?
+  status                String   @default("pending") // pending, approved, rejected
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PengajuanTraining {
+  id                        String   @id @default(cuid())
+  userId                    String
+  nama                      String
+  nik                       String
+  jabatan                   String
+  departemen                String
+  site                      String
+  poh                       String
+  statusKaryawan            String
+  noKtp                     String
+  noTelp                    String
+  jenisTraining             String // Mandatory, Pengembangan, Perpanjangan Sertifikasi
+  tanggalPelatihan          DateTime
+  catatanTambahan           String?
+  dokumenIkatanDinas        String?
+  dokumenValidasi           String?
+  status                    String   @default("pending") // pending, approved, rejected
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Dokumen {
+  id          String   @id @default(cuid())
+  nama        String
+  kategori    String // SOP, IK, Internal Memo, Template Form
+  subFolder   String?
+  filePath    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model KontakHR {
+  id        String   @id @default(cuid())
+  userId    String?
+  nama      String
+  email     String
+  subjek    String
+  pesan     String
+  status    String   @default("unread") // unread, read, replied
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+}
+
+model WebSettings {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
+}
