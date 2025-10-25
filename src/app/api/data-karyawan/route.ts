@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+
+// In-memory storage for demo
+let karyawanData: any[] = []
 
 export async function GET(request: NextRequest) {
   try {
@@ -7,43 +9,22 @@ export async function GET(request: NextRequest) {
     const departemen = searchParams.get('departemen')
     const search = searchParams.get('search')
 
-    let whereClause: any = {}
-
-    if (departemen && departemen !== 'all') {
-      whereClause.departemen = departemen
-    }
+    let filtered = karyawanData
 
     if (search) {
-      whereClause.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { nik: { contains: search, mode: 'insensitive' } },
-        { jabatan: { contains: search, mode: 'insensitive' } },
-        { departemen: { contains: search, mode: 'insensitive' } }
-      ]
+      filtered = filtered.filter(item =>
+        item.name.toLowerCase().includes(search.toLowerCase()) ||
+        item.nik.toLowerCase().includes(search.toLowerCase()) ||
+        item.jabatan.toLowerCase().includes(search.toLowerCase()) ||
+        item.departemen.toLowerCase().includes(search.toLowerCase())
+      )
     }
 
-    const karyawan = await db.user.findMany({
-      where: whereClause,
-      select: {
-        id: true,
-        name: true,
-        nik: true,
-        jabatan: true,
-        departemen: true,
-        site: true,
-        poh: true,
-        statusKaryawan: true,
-        noKtp: true,
-        noTelp: true,
-        email: true,
-        createdAt: true
-      },
-      orderBy: {
-        name: 'asc'
-      }
-    })
+    if (departemen && departemen !== 'all') {
+      filtered = filtered.filter(item => item.departemen === departemen)
+    }
 
-    return NextResponse.json(karyawan)
+    return NextResponse.json(filtered)
   } catch (error) {
     console.error('Error fetching data karyawan:', error)
     return NextResponse.json(
@@ -57,16 +38,19 @@ export async function POST(request: NextRequest) {
   try {
     const data = await request.json()
 
-    const karyawan = await db.user.create({
-      data: {
-        ...data,
-        role: 'user'
-      }
-    })
+    const newKaryawan = {
+      id: Date.now().toString(),
+      ...data,
+      role: 'user',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
+
+    karyawanData.push(newKaryawan)
 
     return NextResponse.json({
       message: 'Data karyawan berhasil ditambahkan',
-      data: karyawan
+      data: newKaryawan
     })
   } catch (error) {
     console.error('Error creating karyawan:', error)
@@ -82,14 +66,23 @@ export async function PUT(request: NextRequest) {
     const data = await request.json()
     const { id, ...updateData } = data
 
-    const karyawan = await db.user.update({
-      where: { id },
-      data: updateData
-    })
+    const index = karyawanData.findIndex(item => item.id === id)
+    if (index === -1) {
+      return NextResponse.json(
+        { error: 'Karyawan tidak ditemukan' },
+        { status: 404 }
+      )
+    }
+
+    karyawanData[index] = {
+      ...karyawanData[index],
+      ...updateData,
+      updatedAt: new Date().toISOString()
+    }
 
     return NextResponse.json({
       message: 'Data karyawan berhasil diperbarui',
-      data: karyawan
+      data: karyawanData[index]
     })
   } catch (error) {
     console.error('Error updating karyawan:', error)
@@ -112,9 +105,15 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
-    await db.user.delete({
-      where: { id }
-    })
+    const index = karyawanData.findIndex(item => item.id === id)
+    if (index === -1) {
+      return NextResponse.json(
+        { error: 'Karyawan tidak ditemukan' },
+        { status: 404 }
+      )
+    }
+
+    karyawanData.splice(index, 1)
 
     return NextResponse.json({
       message: 'Data karyawan berhasil dihapus'

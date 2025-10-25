@@ -1,23 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+
+// In-memory storage for demo
+let pengajuanTrainingData: any[] = []
 
 export async function GET() {
   try {
-    const pengajuanTraining = await db.pengajuanTraining.findMany({
-      include: {
-        user: {
-          select: {
-            name: true,
-            email: true
-          }
-        }
-      },
-      orderBy: {
-        createdAt: 'desc'
-      }
-    })
-
-    return NextResponse.json(pengajuanTraining)
+    return NextResponse.json(pengajuanTrainingData)
   } catch (error) {
     console.error('Error fetching pengajuan training:', error)
     return NextResponse.json(
@@ -30,17 +18,21 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const data = await request.json()
+    
+    const newPengajuan = {
+      id: Date.now().toString(),
+      ...data,
+      tanggalPelatihan: new Date(data.tanggalPelatihan),
+      status: 'pending',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
 
-    const pengajuanTraining = await db.pengajuanTraining.create({
-      data: {
-        ...data,
-        tanggalPelatihan: new Date(data.tanggalPelatihan)
-      }
-    })
+    pengajuanTrainingData.push(newPengajuan)
 
     return NextResponse.json({
       message: 'Pengajuan training berhasil disimpan',
-      data: pengajuanTraining
+      data: newPengajuan
     })
   } catch (error) {
     console.error('Error creating pengajuan training:', error)

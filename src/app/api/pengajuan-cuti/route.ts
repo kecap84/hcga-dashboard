@@ -1,23 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+
+// For now, we'll use in-memory storage for demo
+let pengajuanCutiData: any[] = []
 
 export async function GET() {
   try {
-    const pengajuanCuti = await db.pengajuanCuti.findMany({
-      include: {
-        user: {
-          select: {
-            name: true,
-            email: true
-          }
-        }
-      },
-      orderBy: {
-        createdAt: 'desc'
-      }
-    })
-
-    return NextResponse.json(pengajuanCuti)
+    return NextResponse.json(pengajuanCutiData)
   } catch (error) {
     console.error('Error fetching pengajuan cuti:', error)
     return NextResponse.json(
@@ -30,20 +18,26 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const data = await request.json()
+    
+    // Create new pengajuan cuti with ID and timestamp
+    const newPengajuan = {
+      id: Date.now().toString(),
+      ...data,
+      tanggalCuti: new Date(data.tanggalCuti),
+      tanggalMulaiCuti: new Date(data.tanggalMulaiCuti),
+      tanggalAkhirCuti: new Date(data.tanggalAkhirCuti),
+      cutiPeriodikBerikutnya: data.cutiPeriodikBerikutnya ? new Date(data.cutiPeriodikBerikutnya) : null,
+      status: 'pending',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
 
-    const pengajuanCuti = await db.pengajuanCuti.create({
-      data: {
-        ...data,
-        tanggalCuti: new Date(data.tanggalCuti),
-        tanggalMulaiCuti: new Date(data.tanggalMulaiCuti),
-        tanggalAkhirCuti: new Date(data.tanggalAkhirCuti),
-        cutiPeriodikBerikutnya: data.cutiPeriodikBerikutnya ? new Date(data.cutiPeriodikBerikutnya) : null
-      }
-    })
+    // Add to in-memory storage
+    pengajuanCutiData.push(newPengajuan)
 
     return NextResponse.json({
       message: 'Pengajuan cuti berhasil disimpan',
-      data: pengajuanCuti
+      data: newPengajuan
     })
   } catch (error) {
     console.error('Error creating pengajuan cuti:', error)
