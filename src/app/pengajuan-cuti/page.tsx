@@ -98,15 +98,17 @@ export default function PengajuanCutiPage() {
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0])
-      // Simpan nama file untuk keperluan admin
-      setFormData(prev => ({
-        ...prev,
-        dokumenPdf: e.target.files[0].name
-      }))
-    }
+  const files = e.target.files
+  if (files && files.length > 0) {
+    const file = files[0]
+    setFile(file)
+    // Simpan nama file untuk keperluan admin
+    setFormData(prev => ({
+      ...prev,
+      dokumenPdf: file.name
+    }))
   }
+}
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
