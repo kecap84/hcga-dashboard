@@ -34,8 +34,10 @@ interface PengajuanCuti {
   sisaCuti?: number
   sisaCutiTahunan?: number
   cutiPeriodikBerikutnya?: string
+  dokumenPdf?: string
   status: string
   createdAt: string
+  updatedAt?: string
 }
 
 export default function PengajuanCutiPage() {
@@ -43,9 +45,8 @@ export default function PengajuanCutiPage() {
   const [loading, setLoading] = useState(false)
   const [riwayat, setRiwayat] = useState<PengajuanCuti[]>([])
   const [file, setFile] = useState<File | null>(null)
-  const { toast } = useToast()
-
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<PengajuanCuti>({
+    id: '',
     nama: '',
     nik: '',
     jabatan: '',
@@ -62,10 +63,15 @@ export default function PengajuanCutiPage() {
     ruteCuti: '',
     berangkatDari: '',
     tujuan: '',
-    sisaCuti: '',
-    sisaCutiTahunan: '',
-    cutiPeriodikBerikutnya: ''
+    sisaCuti: undefined,
+    sisaCutiTahunan: undefined,
+    cutiPeriodikBerikutnya: undefined,
+    dokumenPdf: '',
+    status: 'pending',
+    createdAt: '',
+    updatedAt: undefined
   })
+  const { toast } = useToast()
 
   useEffect(() => {
     setMounted(true)
@@ -94,6 +100,11 @@ export default function PengajuanCutiPage() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setFile(e.target.files[0])
+      // Simpan nama file untuk keperluan admin
+      setFormData(prev => ({
+        ...prev,
+        dokumenPdf: e.target.files[0].name
+      }))
     }
   }
 
@@ -107,7 +118,13 @@ export default function PengajuanCutiPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          tanggalCuti: new Date(formData.tanggalCuti),
+          tanggalMulaiCuti: new Date(formData.tanggalMulaiCuti),
+          tanggalAkhirCuti: new Date(formData.tanggalAkhirCuti),
+          cutiPeriodikBerikutnya: formData.cutiPeriodikBerikutnya ? new Date(formData.cutiPeriodikBerikutnya) : null
+        }),
       })
 
       if (response.ok) {
@@ -118,6 +135,7 @@ export default function PengajuanCutiPage() {
         
         // Reset form
         setFormData({
+          id: '',
           nama: '',
           nik: '',
           jabatan: '',
@@ -134,9 +152,13 @@ export default function PengajuanCutiPage() {
           ruteCuti: '',
           berangkatDari: '',
           tujuan: '',
-          sisaCuti: '',
-          sisaCutiTahunan: '',
-          cutiPeriodikBerikutnya: ''
+          sisaCuti: undefined,
+          sisaCutiTahunan: undefined,
+          cutiPeriodikBerikutnya: undefined,
+          dokumenPdf: '',
+          status: 'pending',
+          createdAt: '',
+          updatedAt: undefined
         })
         setFile(null)
         
@@ -189,7 +211,6 @@ export default function PengajuanCutiPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Header */}
       <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center h-16">
@@ -411,7 +432,7 @@ export default function PengajuanCutiPage() {
                         <Input
                           id="sisaCuti"
                           type="number"
-                          value={formData.sisaCuti}
+                          value={formData.sisaCuti || ''}
                           onChange={(e) => handleInputChange('sisaCuti', e.target.value)}
                         />
                       </div>
@@ -421,7 +442,7 @@ export default function PengajuanCutiPage() {
                         <Input
                           id="sisaCutiTahunan"
                           type="number"
-                          value={formData.sisaCutiTahunan}
+                          value={formData.sisaCutiTahunan || ''}
                           onChange={(e) => handleInputChange('sisaCutiTahunan', e.target.value)}
                         />
                       </div>
@@ -431,7 +452,7 @@ export default function PengajuanCutiPage() {
                         <Input
                           id="cutiPeriodikBerikutnya"
                           type="date"
-                          value={formData.cutiPeriodikBerikutnya}
+                          value={formData.cutiPeriodikBerikutnya || ''}
                           onChange={(e) => handleInputChange('cutiPeriodikBerikutnya', e.target.value)}
                         />
                       </div>

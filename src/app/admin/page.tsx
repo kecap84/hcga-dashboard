@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ArrowLeft, Settings, Palette, Type, Globe, Save, Eye } from 'lucide-react'
+import { ArrowLeft, Settings, Palette, Type, Globe, Save, Eye, Calendar, GraduationCap, Users } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import Link from 'next/link'
 
@@ -140,13 +140,76 @@ export default function AdminPage() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-6">
+         <div className="mb-6">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-            Pengaturan Website
+            Admin Dashboard
           </h2>
           <p className="text-gray-600 dark:text-gray-300">
-            Kelola konten dan tampilan website HCGA Dashboard
+            Kelola pengajuan dan pengaturan sistem HCGA Dashboard
           </p>
+        </div>
+
+        {/* Quick Access Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+            <Link href="/admin/pengajuan-cuti">
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-4">
+                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <Calendar className="h-6 w-6 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 dark:text-white">
+                      Pengajuan Cuti
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">
+                      Kelola semua pengajuan cuti karyawan
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Link>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+            <Link href="/admin/pengajuan-training">
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-4">
+                  <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                    <GraduationCap className="h-6 w-6 text-green-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 dark:text-white">
+                      Pengajuan Training
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">
+                      Kelola pengajuan training karyawan
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Link>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+            <Link href="/admin/data-karyawan">
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-4">
+                  <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <Users className="h-6 w-6 text-purple-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 dark:text-white">
+                      Data Karyawan
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">
+                      Kelola data karyawan perusahaan
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Link>
+          </Card>
         </div>
 
         <Tabs defaultValue="general" className="space-y-6">
